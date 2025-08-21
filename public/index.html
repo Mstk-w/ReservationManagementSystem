@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>カンパーニュ予約</title>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+  <main class="container">
+    <h1>受取予約フォーム</h1>
+
+    <section>
+      <label>受取日（水・土のみ）
+        <input type="date" id="pickupDate" />
+      </label>
+      <label>受取時間（11:00–17:00）
+        <select id="pickupTime"></select>
+      </label>
+      <label>支払方法
+        <select id="paymentMethod">
+          <option value="cash">現金</option>
+          <option value="paypay">PayPay</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>商品を選択</h2>
+      <div id="productList" class="grid"></div>
+      <div class="total">合計: <span id="total">0</span> 円</div>
+    </section>
+
+    <section>
+      <h2>お客様情報</h2>
+      <label>氏名
+        <input id="custName" placeholder="山田太郎" />
+      </label>
+      <label>メール
+        <input id="custEmail" type="email" placeholder="taro@example.com" />
+      </label>
+      <label>電話（任意）
+        <input id="custPhone" placeholder="090-xxxx-xxxx" />
+      </label>
+      <label>備考（任意）
+        <input id="notes" placeholder="" />
+      </label>
+    </section>
+
+    <button id="submitBtn">予約する</button>
+    <div id="toast" class="toast" hidden></div>
+  </main>
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ★Firebaseプロジェクト設定（あなたの値でOK：提供いただいた構成を適用）
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7e6YZSeh1RYBdWEfob6xT7XnxBIZu2Uw",
+      authDomain: "hyggelyreservationsystem.firebaseapp.com",
+      projectId: "hyggelyreservationsystem",
+      storageBucket: "hyggelyreservationsystem.appspot.com",
+      messagingSenderId: "549459143900",
+      appId: "1:549459143900:web:7d9f2bb6ddc22573869819"
+    };
+    firebase.initializeApp(firebaseConfig);
+    window.db = firebase.firestore();
+
+    // ★GAS Webアプリ URL & APIキー（C6で設定した値と一致させる）
+    window.GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzqQsqyFmV6HC0l174c73TM4bwhni0hleo2M7-rSoltVoxAjFODwFJQsoJlMaNe_hUv/exec";
+    window.GAS_API_KEY  = "91d012136acf47f0b65ca8f84aceced56af240e21d3f42878f6e535dfe03a625";
+  </script>
+
+  <!-- ES Module -->
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

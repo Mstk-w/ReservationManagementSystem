@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8">
+<title>time.js unit tests</title>
+<script type="module">
+  import { isBusinessDay, genTimeSlots } from "../../src/common/time.js";
+  const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
+
+  // 1) 営業日（水・土）判定
+  const holidays = new Set(["2025-08-23"]); // 臨時休業の例
+  assert(isBusinessDay("2025-08-20", holidays) === true,  "8/20(水) は営業日");
+  assert(isBusinessDay("2025-08-23", holidays) === false, "8/23(土) でも臨時休業→false");
+  assert(isBusinessDay("2025-08-24", holidays) === false, "8/24(日) は非営業日");
+
+  // 2) スロット生成（11:00〜17:00、30分刻み）
+  const slots = genTimeSlots("11:00", "17:00", 30);
+  console.log(slots);
+  assert(slots[0] === "11:00", "開始 11:00");
+  assert(slots.at(-1) === "17:00", "終了 17:00");
+  assert(slots.includes("13:30"), "中間 13:30 を含む");
+
+  // 3) 未来/過去の簡易チェック
+  const nowJst = new Date(new Date().toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }));
+  const past = new Date(nowJst.getTime() - 3600_000);
+  const future = new Date(nowJst.getTime() + 3600_000);
+  if (!(future > nowJst && past < nowJst)) throw new Error("future/past 判定失敗");
+
+  document.body.textContent = "✅ time.js tests passed";
+</script>

@@ -1,0 +1,31 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pickup_date", "order": "ASCENDING" },
+        { "fieldPath": "pickup_time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "payment_method", "order": "ASCENDING" },
+        { "fieldPath": "pickup_date", "order": "ASCENDING" },
+        { "fieldPath": "pickup_time", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "reservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "pickup_date", "order": "ASCENDING" },
+        { "fieldPath": "pickup_time", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

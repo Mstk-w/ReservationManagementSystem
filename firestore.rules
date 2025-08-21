@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function admins() {
+      return get(/databases/$(db)/documents/settings/admins).data.emails;
+    }
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in admins();
+    }
+
+    match /products/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /reservations/{id} {
+      allow create: if
+        // 余計なフィールド遮断
+        request.resource.data.keys().hasOnly([
+          'reserve_no','items','subtotal','total','payment_method',
+          'pickup_date','pickup_time','pickup_ts','status','customer','notes',
+          'created_at'
+        ]) &&
+        // 形式検証
+        request.resource.data.status == "reserved" &&
+        request.resource.data.pickup_date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+        request.resource.data.pickup_time.matches('^\\d{2}:\\d{2}$') &&
+        request.resource.data.payment_method in ['cash','paypay'] &&
+        request.resource.data.customer.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') &&
+        // 受取時刻は未来
+        request.resource.data.pickup_ts is timestamp &&
+        request.resource.data.pickup_ts > request.time &&
+        // 明細は1〜50件
+        request.resource.data.items is list &&
+        request.resource.data.items.size() >= 1 &&
+        request.resource.data.items.size() <= 50;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /holidays/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
