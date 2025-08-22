@@ -25,6 +25,14 @@
         { "fieldPath": "pickup_date", "order": "ASCENDING" },
         { "fieldPath": "pickup_time", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "enabled", "order": "ASCENDING" },
+        { "fieldPath": "sort_order", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

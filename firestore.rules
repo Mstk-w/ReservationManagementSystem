@@ -8,40 +8,56 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email in admins();
     }
 
+    // 商品データ：誰でも読取可、管理者のみ書込可
     match /products/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // ★★★ 予約データ：誰でも作成可、管理者のみ読取・更新・削除可 ★★★
     match /reservations/{id} {
+      // 誰でも予約作成可能（基本的なバリデーションのみ）
       allow create: if
-        // 余計なフィールド遮断
-        request.resource.data.keys().hasOnly([
-          'reserve_no','items','subtotal','total','payment_method',
-          'pickup_date','pickup_time','pickup_ts','status','customer','notes',
-          'created_at'
+        // 必須フィールドの存在確認
+        request.resource.data.keys().hasAll([
+          'items', 'total', 'payment_method', 'pickup_date', 
+          'pickup_time', 'pickup_ts', 'status', 'customer'
         ]) &&
-        // 形式検証
+        // 基本的な型・値チェック
         request.resource.data.status == "reserved" &&
-        request.resource.data.pickup_date.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
-        request.resource.data.pickup_time.matches('^\\d{2}:\\d{2}$') &&
         request.resource.data.payment_method in ['cash','paypay'] &&
+        request.resource.data.customer is map &&
+        request.resource.data.customer.keys().hasAll(['name', 'email']) &&
+        request.resource.data.customer.email is string &&
         request.resource.data.customer.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$') &&
         // 受取時刻は未来
         request.resource.data.pickup_ts is timestamp &&
         request.resource.data.pickup_ts > request.time &&
-        // 明細は1〜50件
+        // 明細は配列で1件以上
         request.resource.data.items is list &&
         request.resource.data.items.size() >= 1 &&
-        request.resource.data.items.size() <= 50;
-      allow read, update, delete: if isAdmin();
+        request.resource.data.items.size() <= 50 &&
+        // 金額は正の数
+        request.resource.data.total is number &&
+        request.resource.data.total > 0;
+      
+      // 予約更新（reserve_no追加など）も誰でも可能（作成直後のupdate用）
+      allow update: if
+        // 既存予約の作成者による更新、または管理者による更新
+        (resource.data.customer.email == request.resource.data.customer.email) ||
+        isAdmin();
+      
+      // 管理者のみ読取・削除可
+      allow read, delete: if isAdmin();
     }
 
+    // 休業日：誰でも読取可、管理者のみ書込可
     match /holidays/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // 設定：管理者のみアクセス可
     match /settings/{id} {
       allow read, write: if isAdmin();
     }

@@ -4,51 +4,617 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>カンパーニュ予約</title>
-  <link rel="stylesheet" href="./style.css"/>
+  <style>
+    /* =========================== */
+    /* 基本スタイル（元のstyle.css + 拡張） */
+    /* =========================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: system-ui, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background: #fafafa; 
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .container { 
+      max-width: 900px; 
+      margin: 24px auto; 
+      padding: 16px; 
+      background: #fff; 
+      border-radius: 12px; 
+      box-shadow: 0 2px 12px rgba(0,0,0,.06); 
+    }
+
+    h1, h2 { 
+      margin: 8px 0 16px; 
+      color: #2d6cdf;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      border-bottom: 2px solid #e8f4fd;
+      padding-bottom: 8px;
+      margin-top: 32px;
+    }
+
+    label { 
+      display: block; 
+      margin: 8px 0;
+      font-weight: 500;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e8ed;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-top: 4px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2d6cdf;
+      box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+    }
+
+    small {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    section {
+      margin: 24px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 1px solid #e9ecef;
+    }
+
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+      gap: 12px; 
+      margin-top: 16px;
+    }
+
+    .card { 
+      border: 1px solid #e1e8ed; 
+      padding: 16px; 
+      border-radius: 10px; 
+      background: white;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    .card h3 { 
+      margin: 0 0 8px; 
+      font-size: 16px; 
+      color: #2d6cdf;
+      font-weight: 600;
+    }
+
+    .card > div {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .qty { 
+      width: 70px; 
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .total { 
+      font-size: 20px; 
+      font-weight: bold; 
+      margin-top: 16px;
+      padding: 16px;
+      background: #e8f4fd;
+      border-radius: 8px;
+      text-align: center;
+      color: #2d6cdf;
+    }
+
+    button { 
+      width: 100%;
+      padding: 16px 24px; 
+      border: none; 
+      background: #2d6cdf; 
+      color: #fff; 
+      border-radius: 8px; 
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 24px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: #1e4ba8;
+      transform: translateY(-1px);
+    }
+
+    button:disabled { 
+      background: #999; 
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.loading { 
+      opacity: .7; 
+      pointer-events: none; 
+    }
+
+    .toast { 
+      margin-top: 16px; 
+      padding: 16px; 
+      border-radius: 8px; 
+      background: #d4edda; 
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      font-weight: 500;
+    }
+
+    .toast.error { 
+      background: #f8d7da; 
+      color: #721c24;
+      border-color: #f5c6cb;
+    }
+
+    .toast.warning { 
+      background: #fff3cd; 
+      color: #856404;
+      border-color: #ffeaa7;
+    }
+
+    /* =========================== */
+    /* デバッグ・ステータス用スタイル */
+    /* =========================== */
+    .debug-info {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #0d47a1;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .debug-info h3 {
+      margin: 0 0 12px;
+      color: #1565c0;
+      font-size: 14px;
+    }
+
+    .debug-info div {
+      margin: 4px 0;
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+      font-family: monospace;
+    }
+
+    .error-info {
+      background: #ffebee;
+      border: 1px solid #f44336;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 8px;
+      color: #c62828;
+      font-weight: 500;
+    }
+
+    .loading {
+      background: #fff3e0;
+      border: 1px solid #ff9800;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 8px;
+      color: #e65100;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .success {
+      background: #e8f5e9;
+      border: 1px solid #4caf50;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 8px;
+      color: #2e7d32;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    #productList.loading::after {
+      content: "📦 商品データを読み込み中...";
+      display: block;
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+      font-size: 16px;
+    }
+
+    /* =========================== */
+    /* 予約完了画面スタイル */
+    /* =========================== */
+    .success-screen {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+      border-radius: 16px;
+      border: 2px solid #4caf50;
+      margin: 20px 0;
+    }
+
+    .success-screen h2 {
+      color: #2e7d32;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      border: none;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      color: #4caf50;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .reservation-details {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 1px solid #c8e6c9;
+    }
+
+    .reservation-details h3 {
+      color: #2e7d32;
+      margin-bottom: 15px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #e8f5e9;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .detail-value {
+      color: #1b5e20;
+    }
+
+    .back-button {
+      background: #4caf50;
+      margin-top: 20px;
+    }
+
+    .back-button:hover:not(:disabled) {
+      background: #388e3c;
+    }
+
+    .warning-notice {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
+      color: #856404;
+      font-size: 14px;
+    }
+
+    /* =========================== */
+    /* ボタン追加スタイル */
+    /* =========================== */
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+      width: auto;
+      padding: 8px 16px;
+      font-size: 12px;
+      margin: 10px 0;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #5a6268;
+    }
+
+    /* =========================== */
+    /* レスポンシブ対応 */
+    /* =========================== */
+    @media (max-width: 768px) {
+      .container {
+        margin: 12px;
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 16px;
+      }
+
+      button {
+        padding: 14px 20px;
+      }
+
+      .success-screen h2 {
+        font-size: 1.6rem;
+      }
+
+      .success-icon {
+        font-size: 3rem;
+      }
+
+      .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        margin: 8px;
+        padding: 8px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      section {
+        padding: 12px;
+      }
+
+      input, select {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+    }
+
+    /* =========================== */
+    /* アニメーション */
+    /* =========================== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes checkmark {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .container {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .loading {
+      animation: pulse 1.5s infinite;
+    }
+
+    .success-screen {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .success-icon {
+      animation: checkmark 0.8s ease-out;
+    }
+
+    /* =========================== */
+    /* ユーティリティクラス */
+    /* =========================== */
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .text-right { text-align: right; }
+
+    .mt-1 { margin-top: 8px; }
+    .mt-2 { margin-top: 16px; }
+    .mt-3 { margin-top: 24px; }
+
+    .mb-1 { margin-bottom: 8px; }
+    .mb-2 { margin-bottom: 16px; }
+    .mb-3 { margin-bottom: 24px; }
+
+    .hidden { display: none; }
+
+    /* =========================== */
+    /* スクロールバーのスタイリング */
+    /* =========================== */
+    .debug-info::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .debug-info::-webkit-scrollbar-track {
+      background: rgba(33, 150, 243, 0.1);
+      border-radius: 3px;
+    }
+
+    .debug-info::-webkit-scrollbar-thumb {
+      background: rgba(33, 150, 243, 0.3);
+      border-radius: 3px;
+    }
+
+    .debug-info::-webkit-scrollbar-thumb:hover {
+      background: rgba(33, 150, 243, 0.5);
+    }
+  </style>
 </head>
 <body>
   <main class="container">
-    <h1>受取予約フォーム</h1>
+    <!-- 予約フォーム画面 -->
+    <div id="reservationForm">
+      <h1>🍞 カンパーニュ受取予約フォーム</h1>
 
-    <section>
-      <label>受取日（水・土のみ）
-        <input type="date" id="pickupDate" />
-      </label>
-      <label>受取時間（11:00–17:00）
-        <select id="pickupTime"></select>
-      </label>
-      <label>支払方法
-        <select id="paymentMethod">
-          <option value="cash">現金</option>
-          <option value="paypay">PayPay</option>
-        </select>
-      </label>
-    </section>
+      <!-- デバッグ情報表示エリア -->
+      <div id="debugInfo" class="debug-info hidden">
+        <h3>🔧 デバッグ情報</h3>
+        <div id="debugContent"></div>
+      </div>
 
-    <section>
-      <h2>商品を選択</h2>
-      <div id="productList" class="grid"></div>
-      <div class="total">合計: <span id="total">0</span> 円</div>
-    </section>
+      <!-- システム状態表示 -->
+      <div id="systemStatus" class="loading">
+        📡 システム接続を確認中...
+      </div>
 
-    <section>
-      <h2>お客様情報</h2>
-      <label>氏名
-        <input id="custName" placeholder="山田太郎" />
-      </label>
-      <label>メール
-        <input id="custEmail" type="email" placeholder="taro@example.com" />
-      </label>
-      <label>電話（任意）
-        <input id="custPhone" placeholder="090-xxxx-xxxx" />
-      </label>
-      <label>備考（任意）
-        <input id="notes" placeholder="" />
-      </label>
-    </section>
+      <section>
+        <h2>📅 受取日時の選択</h2>
+        <label>受取日（水・土のみ）
+          <input type="date" id="pickupDate" />
+          <small id="dateHelp">営業日（水曜日・土曜日）を選択してください</small>
+        </label>
+        
+        <label>受取時間（11:00–17:00）
+          <select id="pickupTime">
+            <option value="">時間を選択してください</option>
+          </select>
+          <small id="timeHelp">先に受取日を選択してください</small>
+        </label>
+        
+        <label>支払方法
+          <select id="paymentMethod">
+            <option value="cash">💰 現金</option>
+            <option value="paypay">📱 PayPay</option>
+          </select>
+        </label>
+      </section>
 
-    <button id="submitBtn">予約する</button>
-    <div id="toast" class="toast" hidden></div>
+      <section>
+        <h2>🛒 商品を選択</h2>
+        <div id="productStatus" class="loading">商品データを読み込み中...</div>
+        <div id="productList" class="grid loading"></div>
+        <div class="total">合計: ¥<span id="total">0</span></div>
+      </section>
+
+      <section>
+        <h2>👤 お客様情報</h2>
+        <label>氏名 <span style="color: #e74c3c;">*</span>
+          <input id="custName" placeholder="山田太郎" required />
+        </label>
+        
+        <label>メールアドレス <span style="color: #e74c3c;">*</span>
+          <input id="custEmail" type="email" placeholder="taro@example.com" required />
+        </label>
+        
+        <label>電話番号（任意）
+          <input id="custPhone" type="tel" placeholder="090-1234-5678" />
+        </label>
+        
+        <label>備考（任意）
+          <input id="notes" placeholder="アレルギーやご要望などございましたらご記入ください" />
+        </label>
+      </section>
+
+      <button id="submitBtn" disabled>システム初期化中...</button>
+      
+      <div id="toast" class="toast hidden"></div>
+
+      <!-- 詳細ログ表示切り替え -->
+      <button type="button" onclick="toggleDebug()" class="btn-secondary">
+        🔍 デバッグ情報表示切り替え
+      </button>
+    </div>
+
+    <!-- 予約完了画面 -->
+    <div id="successScreen" class="hidden">
+      <div class="success-screen">
+        <span class="success-icon">✅</span>
+        <h2>予約完了いたしました！</h2>
+        <p>ご予約ありがとうございます。以下の内容で承りました。</p>
+        
+        <div class="reservation-details">
+          <h3>📋 予約詳細</h3>
+          <div class="detail-row">
+            <span class="detail-label">予約番号:</span>
+            <span class="detail-value" id="successReserveNo">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">お名前:</span>
+            <span class="detail-value" id="successName">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">受取日時:</span>
+            <span class="detail-value" id="successDateTime">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">お支払い:</span>
+            <span class="detail-value" id="successPayment">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">合計金額:</span>
+            <span class="detail-value" id="successTotal">-</span>
+          </div>
+        </div>
+
+        <div class="reservation-details">
+          <h3>📧 確認メール</h3>
+          <div id="mailStatus"></div>
+        </div>
+
+        <div class="reservation-details">
+          <h3>📍 店舗情報</h3>
+          <p><strong>受取場所:</strong> カンパーニュ</p>
+          <p><strong>営業日:</strong> 水曜日・土曜日</p>
+          <p><strong>営業時間:</strong> 11:00～17:00</p>
+          <p style="margin-top: 10px; color: #666; font-size: 14px;">
+            ※ 当日お気をつけてお越しください<br>
+            ※ ご不明な点がございましたら、確認メールに記載の連絡先までお問い合わせください
+          </p>
+        </div>
+
+        <button class="back-button" onclick="backToForm()">🔙 新しい予約をする</button>
+      </div>
+    </div>
   </main>
 
   <!-- Firebase SDK (compat) -->
@@ -56,24 +622,713 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
-    // ★Firebaseプロジェクト設定（あなたの値でOK：提供いただいた構成を適用）
+    // ★Firebase設定（修正版）
     const firebaseConfig = {
       apiKey: "AIzaSyC7e6YZSeh1RYBdWEfob6xT7XnxBIZu2Uw",
       authDomain: "hyggelyreservationsystem.firebaseapp.com",
       projectId: "hyggelyreservationsystem",
-      storageBucket: "hyggelyreservationsystem.appspot.com",
+      storageBucket: "hyggelyreservationsystem.firebasestorage.app",
       messagingSenderId: "549459143900",
       appId: "1:549459143900:web:7d9f2bb6ddc22573869819"
     };
-    firebase.initializeApp(firebaseConfig);
-    window.db = firebase.firestore();
 
-    // ★GAS Webアプリ URL & APIキー（C6で設定した値と一致させる）
+    // デバッグ機能
+    let debugMode = false;
+    let debugLogs = [];
+    
+    function debugLog(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+      debugLogs.push(logEntry);
+      console.log(logEntry);
+      
+      if (debugMode) {
+        updateDebugDisplay();
+      }
+    }
+    
+    function updateDebugDisplay() {
+      const debugContent = document.getElementById('debugContent');
+      if (debugContent) {
+        debugContent.innerHTML = debugLogs.slice(-20).map(log => `<div>${escapeHtml(log)}</div>`).join('');
+      }
+    }
+    
+    function toggleDebug() {
+      debugMode = !debugMode;
+      const debugInfo = document.getElementById('debugInfo');
+      if (debugInfo) {
+        debugInfo.classList.toggle('hidden', !debugMode);
+        if (debugMode) updateDebugDisplay();
+      }
+    }
+
+    // 画面切り替え
+    function showSuccessScreen() {
+      document.getElementById('reservationForm').classList.add('hidden');
+      document.getElementById('successScreen').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    function backToForm() {
+      document.getElementById('successScreen').classList.add('hidden');
+      document.getElementById('reservationForm').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    }
+
+    // Firebase初期化
+    try {
+      firebase.initializeApp(firebaseConfig);
+      window.db = firebase.firestore();
+      debugLog('Firebase初期化成功');
+    } catch (error) {
+      debugLog(`Firebase初期化エラー: ${error.message}`, 'error');
+      updateSystemStatus('❌ Firebase初期化に失敗しました', 'error');
+    }
+
+    // ★GAS設定
     window.GAS_ENDPOINT = "https://script.google.com/macros/s/AKfycbzqQsqyFmV6HC0l174c73TM4bwhni0hleo2M7-rSoltVoxAjFODwFJQsoJlMaNe_hUv/exec";
     window.GAS_API_KEY  = "91d012136acf47f0b65ca8f84aceced56af240e21d3f42878f6e535dfe03a625";
+
+    // システム状態表示更新
+    function updateSystemStatus(message, type = 'loading') {
+      const statusEl = document.getElementById('systemStatus');
+      const productStatusEl = document.getElementById('productStatus');
+      
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.className = type;
+      }
+      
+      if (productStatusEl && type !== 'loading') {
+        productStatusEl.textContent = type === 'success' ? '✅ 商品一覧' : message;
+        productStatusEl.className = type;
+      }
+    }
+
+    // 時間関連ユーティリティ
+    function isBusinessDay(dateStr, holidaysSet) {
+      try {
+        const d = new Date(dateStr + 'T00:00:00+09:00');
+        const wd = d.getDay(); // 0=日..6=土
+        if (holidaysSet && holidaysSet.has(dateStr)) {
+          debugLog(`${dateStr}は臨時休業日です`);
+          return false;
+        }
+        const isBusiness = wd === 3 || wd === 6; // 水曜(3)・土曜(6)
+        debugLog(`${dateStr} 曜日:${wd} 営業日:${isBusiness}`);
+        return isBusiness;
+      } catch (error) {
+        debugLog(`営業日判定エラー: ${error.message}`, 'error');
+        return false;
+      }
+    }
+
+    function genTimeSlots(open = "11:00", close = "17:00", stepMin = 30) {
+      try {
+        const [oh, om] = open.split(':').map(Number);
+        const [ch, cm] = close.split(':').map(Number);
+        let start = oh * 60 + om, end = ch * 60 + cm;
+        const slots = [];
+        for (let m = start; m <= end; m += stepMin) {
+          const hh = String(Math.floor(m / 60)).padStart(2, '0');
+          const mm = String(m % 60).padStart(2, '0');
+          slots.push(`${hh}:${mm}`);
+        }
+        debugLog(`時間スロット生成: ${slots.length}件 (${slots[0]} - ${slots[slots.length-1]})`);
+        return slots;
+      } catch (error) {
+        debugLog(`時間スロット生成エラー: ${error.message}`, 'error');
+        return [];
+      }
+    }
+
+    // HTMLエスケープ
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ★★★ CORS対応のGAS通信関数 ★★★
+    async function sendToGAS(path, data, retries = 2) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          debugLog(`GAS通信試行 ${attempt}/${retries}: ${path}`);
+          
+          // 方法1: FormData使用（preflightを避ける）
+          const formData = new FormData();
+          formData.append('key', GAS_API_KEY);
+          formData.append('path', path);
+          formData.append('data', JSON.stringify(data));
+          
+          const response = await fetch(GAS_ENDPOINT, {
+            method: 'POST',
+            body: formData,
+            mode: 'cors',
+            credentials: 'omit'
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const result = await response.json();
+          debugLog(`GAS通信成功: ${path} - ${JSON.stringify(result)}`);
+          return result;
+          
+        } catch (error) {
+          debugLog(`GAS通信失敗 ${attempt}/${retries}: ${error.message}`, 'error');
+          
+          if (attempt === retries) {
+            // 最後の試行でも失敗した場合
+            debugLog(`GAS通信最終失敗: ${path}`, 'error');
+            
+            // CORSエラーの場合は別の方法を試行
+            if (error.message.includes('CORS') || error.message.includes('fetch')) {
+              return await sendToGASFallback(path, data);
+            }
+            
+            throw error;
+          }
+          
+          // リトライ前に少し待機
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+
+    // ★★★ GAS通信フォールバック（GET方式）★★★
+    async function sendToGASFallback(path, data) {
+      try {
+        debugLog(`GASフォールバック通信: ${path}`);
+        
+        // GETパラメータで送信（CORSを回避）
+        const params = new URLSearchParams({
+          key: GAS_API_KEY,
+          path: path,
+          data: JSON.stringify(data)
+        });
+        
+        const url = `${GAS_ENDPOINT}?${params.toString()}`;
+        
+        // img要素を使用した非同期通信（CORSを完全に回避）
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            debugLog(`GASフォールバック通信完了: ${path}`);
+            resolve({ ok: true, method: 'fallback' });
+          };
+          img.onerror = () => {
+            debugLog(`GASフォールバック通信エラー: ${path}`, 'error');
+            resolve({ ok: false, method: 'fallback', error: 'image_load_failed' });
+          };
+          img.src = url;
+          
+          // タイムアウト処理
+          setTimeout(() => {
+            debugLog(`GASフォールバック通信タイムアウト: ${path}`, 'error');
+            resolve({ ok: false, method: 'fallback', error: 'timeout' });
+          }, 10000);
+        });
+        
+      } catch (error) {
+        debugLog(`GASフォールバック通信エラー: ${error.message}`, 'error');
+        return { ok: false, method: 'fallback', error: error.message };
+      }
+    }
   </script>
 
-  <!-- ES Module -->
-  <script type="module" src="./main.js"></script>
+  <!-- メインロジック -->
+  <script>
+    const els = {
+      date:  document.getElementById('pickupDate'),
+      time:  document.getElementById('pickupTime'),
+      pm:    document.getElementById('paymentMethod'),
+      list:  document.getElementById('productList'),
+      total: document.getElementById('total'),
+      name:  document.getElementById('custName'),
+      email: document.getElementById('custEmail'),
+      phone: document.getElementById('custPhone'),
+      notes: document.getElementById('notes'),
+      btn:   document.getElementById('submitBtn'),
+      toast: document.getElementById('toast'),
+    };
+
+    let products = []; // {id,name,price,enabled,seasonal,sort_order}
+    let holidays = new Set();
+    let cart = {};     // {productId: qty}
+    let systemReady = false;
+
+    const db = window.db;
+    const GAS_ENDPOINT = window.GAS_ENDPOINT;
+    const GAS_API_KEY  = window.GAS_API_KEY;
+
+    // システム初期化
+    async function init() {
+      try {
+        debugLog('🚀 システム初期化開始');
+        updateSystemStatus('📡 データベース接続を確認中...', 'loading');
+
+        // 接続テスト
+        await testFirebaseConnection();
+        
+        // 休日取得
+        debugLog('📅 休業日データ取得開始');
+        await loadHolidays();
+        
+        // 商品取得
+        debugLog('🛍️ 商品データ取得開始');
+        await loadProducts();
+        
+        // イベントリスナー設定
+        setupEventListeners();
+        
+        // システム準備完了
+        systemReady = true;
+        updateSystemStatus('✅ システム準備完了', 'success');
+        els.btn.disabled = false;
+        els.btn.textContent = '📝 予約する';
+        
+        debugLog('✅ システム初期化完了');
+        
+      } catch (error) {
+        debugLog(`❌ システム初期化エラー: ${error.message}`, 'error');
+        updateSystemStatus(`❌ システムエラー: ${error.message}`, 'error');
+        showToast(`システム初期化に失敗しました: ${error.message}`, true);
+      }
+    }
+
+    // Firebase接続テスト
+    async function testFirebaseConnection() {
+      try {
+        debugLog('🔗 Firebase接続テスト開始');
+        
+        // プロジェクト情報取得テスト
+        const testDoc = await db.collection('products').limit(1).get();
+        debugLog(`✅ Firebase接続成功 - プロジェクト: ${firebase.app().options.projectId}`);
+        debugLog(`📊 接続テスト結果: ${testDoc.size}件のドキュメント取得`);
+        
+      } catch (error) {
+        debugLog(`❌ Firebase接続テストエラー: ${error.message}`, 'error');
+        throw new Error(`データベース接続に失敗しました: ${error.message}`);
+      }
+    }
+
+    // 休業日データ読み込み
+    async function loadHolidays() {
+      try {
+        const hs = await db.collection('holidays').get();
+        holidays.clear();
+        hs.forEach(d => holidays.add(d.data().date));
+        debugLog(`📅 休業日データ取得完了: ${holidays.size}件`);
+        if (holidays.size > 0) {
+          debugLog(`休業日: ${Array.from(holidays).join(', ')}`);
+        }
+      } catch (error) {
+        debugLog(`⚠️ 休業日データ取得エラー: ${error.message}`, 'error');
+        // 休業日データが取得できなくても続行
+        debugLog('休業日データなしで続行');
+      }
+    }
+
+    // 商品データ読み込み
+    async function loadProducts() {
+      try {
+        debugLog('🔍 商品データクエリ実行中...');
+        
+        // インデックス不要な単純クエリ
+        debugLog('📦 全商品データ取得を開始');
+        const snap = await db.collection('products').get();
+        
+        debugLog(`📦 全商品データ取得: ${snap.size}件`);
+        
+        products = [];
+        const rawProducts = [];
+        
+        snap.forEach(doc => {
+          const productData = { id: doc.id, ...doc.data() };
+          rawProducts.push(productData);
+        });
+        
+        // JavaScriptでフィルタリングとソート
+        products = rawProducts
+          .filter(p => p.enabled === true)  // enabledのみフィルタ
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)); // sort_orderでソート
+        
+        debugLog(`🎯 有効商品フィルタ結果: ${products.length}件`);
+        
+        products.forEach((p, index) => {
+          debugLog(`商品${index + 1}: ${p.name} - ¥${p.price} (順序:${p.sort_order})`);
+        });
+        
+        if (products.length === 0) {
+          throw new Error('有効な商品が見つかりません');
+        }
+        
+        renderProducts();
+        updateSystemStatus('✅ 商品データ読み込み完了', 'success');
+        
+      } catch (error) {
+        debugLog(`❌ 商品データ取得エラー: ${error.message}`, 'error');
+        updateSystemStatus(`❌ 商品データ取得エラー: ${error.message}`, 'error');
+        throw error;
+      }
+    }
+
+    // 商品リスト描画
+    function renderProducts() {
+      try {
+        debugLog('🎨 商品リスト描画開始');
+        
+        els.list.classList.remove('loading');
+        els.list.innerHTML = '';
+        
+        if (products.length === 0) {
+          els.list.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;">📦 商品データがありません</div>';
+          return;
+        }
+        
+        products.forEach(p => {
+          // 価格が0円の商品を除外
+          if (p.price <= 0) {
+            debugLog(`⚠️ 価格0円商品をスキップ: ${p.name}`);
+            return;
+          }
+          
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <h3>🍞 ${escapeHtml(p.name)}</h3>
+            <div>¥${p.price.toLocaleString()}</div>
+            <label>数量 
+              <input type="number" min="0" max="20" value="0" class="qty" data-id="${p.id}">
+            </label>
+          `;
+          els.list.appendChild(card);
+          debugLog(`✅ 商品カード作成: ${p.name}`);
+        });
+        
+        // 数量変更イベント設定
+        els.list.querySelectorAll('.qty').forEach(inp => {
+          inp.addEventListener('input', onQuantityChange);
+        });
+        
+        debugLog(`🎨 商品リスト描画完了: ${products.length}件`);
+        
+      } catch (error) {
+        debugLog(`❌ 商品リスト描画エラー: ${error.message}`, 'error');
+        els.list.innerHTML = `<div class="error-info">商品リスト表示エラー: ${error.message}</div>`;
+      }
+    }
+
+    // 数量変更ハンドラ
+    function onQuantityChange(event) {
+      try {
+        const inp = event.target;
+        const id = inp.dataset.id;
+        const q = Math.max(0, Math.min(20, Number(inp.value || 0)));
+        
+        if (q === 0) {
+          delete cart[id];
+        } else {
+          cart[id] = q;
+        }
+        
+        calcTotal();
+        debugLog(`🛒 商品数量変更: ${id} = ${q}`);
+        
+      } catch (error) {
+        debugLog(`❌ 数量変更エラー: ${error.message}`, 'error');
+      }
+    }
+
+    // 受取日変更ハンドラ
+    function onDateChange() {
+      try {
+        const d = els.date.value;
+        const timeHelp = document.getElementById('timeHelp');
+        
+        debugLog(`📅 受取日選択: ${d}`);
+        
+        // 時間選択肢をクリア
+        els.time.innerHTML = '<option value="">時間を選択してください</option>';
+        
+        if (!d) {
+          timeHelp.textContent = '先に受取日を選択してください';
+          timeHelp.style.color = '#666';
+          return;
+        }
+        
+        if (!isBusinessDay(d, holidays)) {
+          timeHelp.textContent = '❌ 営業日（水・土）かつ臨時休業日以外を選択してください';
+          timeHelp.style.color = '#e74c3c';
+          showToast('営業日（水曜日・土曜日）かつ臨時休業日以外を選択してください。', true);
+          return;
+        }
+        
+        // 営業日の場合、時間スロットを生成
+        const timeSlots = genTimeSlots();
+        debugLog(`⏰ 時間スロット生成: ${timeSlots.length}件`);
+        
+        timeSlots.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          els.time.appendChild(opt);
+        });
+        
+        timeHelp.textContent = '✅ 受取時間を選択してください';
+        timeHelp.style.color = '#27ae60';
+        
+      } catch (error) {
+        debugLog(`❌ 受取日変更エラー: ${error.message}`, 'error');
+        showToast(`日付処理エラー: ${error.message}`, true);
+      }
+    }
+
+    // 合計金額計算
+    function calcTotal() {
+      try {
+        let total = 0;
+        let itemCount = 0;
+        
+        Object.entries(cart).forEach(([pid, qty]) => {
+          const p = products.find(x => x.id === pid);
+          if (p) {
+            total += p.price * qty;
+            itemCount += qty;
+          }
+        });
+        
+        els.total.textContent = total.toLocaleString();
+        debugLog(`💰 合計金額計算: ¥${total.toLocaleString()} (${itemCount}点)`);
+        
+      } catch (error) {
+        debugLog(`❌ 合計計算エラー: ${error.message}`, 'error');
+        els.total.textContent = '0';
+      }
+    }
+
+    // イベントリスナー設定
+    function setupEventListeners() {
+      debugLog('🔧 イベントリスナー設定開始');
+      
+      els.date.addEventListener('change', onDateChange);
+      els.pm.addEventListener('change', calcTotal);
+      els.btn.addEventListener('click', onSubmit);
+      
+      debugLog('✅ イベントリスナー設定完了');
+    }
+
+    // バリデーション
+    function validate() {
+      if (!systemReady) throw new Error('システムが準備中です。しばらくお待ちください。');
+      if (!els.date.value || !isBusinessDay(els.date.value, holidays)) throw new Error('受取日が不正です。');
+      if (!els.time.value) throw new Error('受取時間を選択してください。');
+
+      // 過去日時禁止（JST）
+      const now = new Date(new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }));
+      const pick = new Date(`${els.date.value}T${els.time.value}:00+09:00`);
+      if (!(pick > now)) throw new Error('過去の日時は選択できません。');
+
+      if (!['cash','paypay'].includes(els.pm.value)) throw new Error('支払方法が不正です。');
+      if (!els.name.value.trim()) throw new Error('氏名を入力してください。');
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(els.email.value.trim())) throw new Error('メール形式が不正です。');
+      if (Object.keys(cart).length === 0) throw new Error('商品数量を1点以上入力してください。');
+      
+      debugLog('✅ バリデーション成功');
+    }
+
+    // ★★★ 予約送信（CORS対応版）★★★
+    async function onSubmit() {
+      try {
+        els.btn.disabled = true;
+        els.btn.classList.add('loading');
+        els.btn.textContent = '📤 送信中…';
+        
+        debugLog('📝 予約送信開始');
+        validate();
+
+        // アイテム整形
+        const items = Object.entries(cart).map(([pid, qty]) => {
+          const p = products.find(x => x.id === pid);
+          return { product_id: pid, name: p.name, unit_price: p.price, qty, line_total: p.price * qty };
+        });
+        const total = items.reduce((a,b)=>a+b.line_total,0);
+
+        const pickupDate = els.date.value;
+        const pickupTime = els.time.value;
+        const pickupTs   = firebase.firestore.Timestamp.fromDate(new Date(`${pickupDate}T${pickupTime}:00+09:00`));
+
+        debugLog(`📋 予約データ作成: ${pickupDate} ${pickupTime}, 合計¥${total.toLocaleString()}`);
+
+        // Firestoreに予約保存
+        const payload = {
+          items,
+          subtotal: total, 
+          total,
+          payment_method: els.pm.value,
+          pickup_date: pickupDate,
+          pickup_time: pickupTime,
+          pickup_ts: pickupTs,
+          status: 'reserved',
+          customer: { 
+            name: els.name.value.trim(), 
+            email: els.email.value.trim(),
+            phone: els.phone.value.trim() || null
+          },
+          notes: els.notes.value.trim() || null,
+          created_at: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        debugLog('💾 Firestore保存開始');
+        const ref = await db.collection('reservations').add(payload);
+        const reserve_no = `R-${pickupDate.replace(/-/g,'')}-${ref.id.slice(0,5)}`;
+        await ref.update({ reserve_no });
+        debugLog(`✅ 予約保存完了: ${reserve_no}`);
+
+        // ★修正: メール送信を非同期で実行（失敗しても予約成功）
+        let mailStatus = { success: false, message: '確認中...' };
+        let remindStatus = { success: false, message: '確認中...' };
+
+        // メール送信を並行実行（エラーでも続行）
+        const mailPromise = sendToGAS('mail', {
+          reserve_no,
+          customer: payload.customer,
+          pickup: { date: pickupDate, time: pickupTime },
+          items: items.map(i=>({name:i.name, qty:i.qty, unit_price:i.unit_price})),
+          total, 
+          payment_method: payload.payment_method
+        }).then(result => {
+          debugLog(`📧 メール送信結果: ${JSON.stringify(result)}`);
+          mailStatus = { 
+            success: result.ok, 
+            message: result.ok ? '送信完了' : `送信失敗: ${result.error || 'Unknown error'}`,
+            method: result.method || 'unknown'
+          };
+        }).catch(error => {
+          debugLog(`📧 メール送信エラー: ${error.message}`, 'error');
+          mailStatus = { success: false, message: `送信失敗: ${error.message}` };
+        });
+
+        // リマインド設定を並行実行（エラーでも続行）
+        const remindPromise = sendToGAS('remind', {
+          reserve_no,
+          customer: payload.customer,
+          pickup: { date: pickupDate, time: pickupTime }
+        }).then(result => {
+          debugLog(`🔔 リマインド結果: ${JSON.stringify(result)}`);
+          remindStatus = { 
+            success: result.ok, 
+            message: result.ok ? '設定完了' : `設定失敗: ${result.error || 'Unknown error'}`,
+            method: result.method || 'unknown'
+          };
+        }).catch(error => {
+          debugLog(`🔔 リマインド設定エラー: ${error.message}`, 'error');
+          remindStatus = { success: false, message: `設定失敗: ${error.message}` };
+        });
+
+        // メール・リマインド処理の完了を待つ（最大10秒）
+        await Promise.allSettled([
+          Promise.race([mailPromise, new Promise(resolve => setTimeout(resolve, 8000))]),
+          Promise.race([remindPromise, new Promise(resolve => setTimeout(resolve, 8000))])
+        ]);
+
+        debugLog('🎉 予約処理完了');
+        
+        // 予約成功画面へ遷移（メール送信結果を含む）
+        showSuccessScreenWithData({
+          reserve_no,
+          name: payload.customer.name,
+          date: pickupDate,
+          time: pickupTime,
+          payment: payload.payment_method === 'cash' ? '現金' : 'PayPay',
+          total: total.toLocaleString(),
+          mailStatus,
+          remindStatus
+        });
+        
+        // フォームリセット
+        resetForm();
+        
+      } catch (e) {
+        debugLog(`❌ 予約送信エラー: ${e.message}`, 'error');
+        debugLog(`エラー詳細: ${e.stack}`, 'error');
+        showToast(`予約に失敗しました: ${e.message}`, true);
+      } finally {
+        els.btn.disabled = false;
+        els.btn.classList.remove('loading');
+        els.btn.textContent = '📝 予約する';
+      }
+    }
+
+    // 成功画面表示（メール状態付き）
+    function showSuccessScreenWithData(data) {
+      document.getElementById('successReserveNo').textContent = data.reserve_no;
+      document.getElementById('successName').textContent = data.name;
+      document.getElementById('successDateTime').textContent = `${data.date} ${data.time}`;
+      document.getElementById('successPayment').textContent = data.payment;
+      document.getElementById('successTotal').textContent = `¥${data.total}`;
+      
+      // メール状態表示
+      const mailStatusEl = document.getElementById('mailStatus');
+      if (data.mailStatus) {
+        if (data.mailStatus.success) {
+          mailStatusEl.innerHTML = '<p style="color: #27ae60;">✅ ご入力いただいたメールアドレスに確認メールをお送りしました。</p>';
+        } else {
+          mailStatusEl.innerHTML = `
+            <div class="warning-notice">
+              ⚠️ 確認メールの送信に問題が発生しました。<br>
+              ${escapeHtml(data.mailStatus.message)}<br>
+              <small>予約は正常に完了しておりますので、ご安心ください。</small>
+            </div>
+          `;
+        }
+      } else {
+        mailStatusEl.innerHTML = '<p style="color: #666;">📧 確認メール送信状況を確認中...</p>';
+      }
+      
+      showSuccessScreen();
+    }
+
+    // フォームリセット
+    function resetForm() {
+      cart = {};
+      document.querySelectorAll('.qty').forEach(i=>i.value=0);
+      calcTotal();
+      els.date.value = '';
+      els.time.innerHTML = '<option value="">時間を選択してください</option>';
+      els.name.value = '';
+      els.email.value = '';
+      els.phone.value = '';
+      els.notes.value = '';
+      
+      // ヘルプテキストもリセット
+      document.getElementById('dateHelp').textContent = '営業日（水曜日・土曜日）を選択してください';
+      document.getElementById('dateHelp').style.color = '#666';
+      document.getElementById('timeHelp').textContent = '先に受取日を選択してください';
+      document.getElementById('timeHelp').style.color = '#666';
+    }
+
+    // トースト表示
+    function showToast(msg, isErr=false, isWarning=false) {
+      els.toast.textContent = msg;
+      els.toast.classList.remove('hidden');
+      els.toast.className = 'toast' + (isErr ? ' error' : isWarning ? ' warning' : '');
+      setTimeout(()=>{ els.toast.classList.add('hidden'); }, 8000);
+      
+      debugLog(`📢 トースト表示: ${msg}`, isErr ? 'error' : 'info');
+    }
+
+    // 初期化実行
+    document.addEventListener('DOMContentLoaded', () => {
+      debugLog('📄 DOM読み込み完了');
+      init().catch(e => {
+        debugLog(`💥 初期化失敗: ${e.message}`, 'error');
+        showToast(`システム初期化に失敗しました: ${e.message}`, true);
+      });
+    });
+  </script>
 </body>
 </html>
