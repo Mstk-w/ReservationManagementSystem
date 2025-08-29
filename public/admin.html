@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>カンパーニュ管理画面（簡素版）</title>
+  <style>
+    /* 管理画面用の簡素なスタイル */
+    body { font-family: system-ui; margin: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    button { padding: 8px 16px; margin: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 管理ダッシュボード</h1>
+    
+    <!-- ログイン -->
+    <div id="loginSection">
+      <input type="email" id="email" placeholder="管理者メール">
+      <input type="password" id="password" placeholder="パスワード">
+      <button onclick="login()">ログイン</button>
+    </div>
+
+    <!-- 管理画面 -->
+    <div id="adminPanel" style="display:none">
+      <h2>予約一覧</h2>
+      <table id="reservationsTable">
+        <thead>
+          <tr>
+            <th>予約番号</th>
+            <th>日時</th>
+            <th>顧客</th>
+            <th>合計</th>
+            <th>ステータス</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      
+      <button onclick="loadReservations()">🔄 更新</button>
+      <button onclick="logout()">ログアウト</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Firebase設定（既存と同じ）
+    const firebaseConfig = { 
+  apiKey: "AIzaSyC7e6YZSeh1RYBdWEfob6xT7XnxBIZu2Uw",
+  authDomain: "hyggelyreservationsystem.firebaseapp.com",
+  projectId: "hyggelyreservationsystem",
+  storageBucket: "hyggelyreservationsystem.firebasestorage.app",
+  messagingSenderId: "549459143900",
+  appId: "1:549459143900:web:7d9f2bb6ddc22573869819"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // 認証状態監視
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        loadReservations();
+      } else {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('adminPanel').style.display = 'none';
+      }
+    });
+
+    // ログイン
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (error) {
+        alert('ログイン失敗: ' + error.message);
+      }
+    }
+
+    // ログアウト
+    function logout() {
+      auth.signOut();
+    }
+
+    // 予約一覧読み込み
+    async function loadReservations() {
+      const snapshot = await db.collection('reservations')
+        .orderBy('created_at', 'desc')
+        .limit(50)
+        .get();
+      
+      const tbody = document.querySelector('#reservationsTable tbody');
+      tbody.innerHTML = '';
+      
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = tbody.insertRow();
+        row.innerHTML = `
+          <td>${data.reserve_no || doc.id.slice(0,8)}</td>
+          <td>${data.pickup_date} ${data.pickup_time}</td>
+          <td>${data.customer?.name}</td>
+          <td>¥${data.total?.toLocaleString()}</td>
+          <td>${data.status}</td>
+          <td>
+            <button onclick="updateStatus('${doc.id}', 'picked')">引渡済</button>
+            <button onclick="updateStatus('${doc.id}', 'canceled')">取消</button>
+          </td>
+        `;
+      });
+    }
+
+    // ステータス更新
+    async function updateStatus(docId, status) {
+      try {
+        await db.collection('reservations').doc(docId).update({ status });
+        loadReservations();
+        alert('更新しました');
+      } catch (error) {
+        alert('更新エラー: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
