@@ -4,10 +4,77 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>カンパーニュ予約（簡素版）</title>
-  <style>
-    /* 既存のスタイルを維持（省略） */
-  </style>
-</head>
+    <style>
+      /* 既存のスタイルを維持（省略） */
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f4f1ed;
+        margin: 0;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      label {
+        display: block;
+        margin-bottom: 1rem;
+      }
+      input, select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background: #ff9b21;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #e0881c;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+      }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #333;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 4px;
+        display: none;
+        z-index: 1000;
+      }
+      .toast.success { background: #38a169; }
+      .toast.error { background: #e53e3e; }
+      .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        display: none;
+        background: #ff9b21;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+    </style>
+    </head>
 <body>
   <main class="container">
     <div id="reservationForm">
@@ -62,10 +129,12 @@
         <input type="hidden" name="_next" value="https://yoursite.com/success.html">
       </form>
     </div>
-  </main>
+    </main>
+    <div id="toast" class="toast"></div>
+    <button id="backToTop" class="back-to-top" aria-label="ページ上部へ戻る">▲</button>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
   <script>
@@ -558,6 +627,18 @@
       console.log(`トースト表示: ${message} (${type})`);
     }
 
+    // ページ上部へ戻るボタン
+    function setupBackToTop() {
+      const btn = document.getElementById('backToTop');
+      if (!btn) return;
+      window.addEventListener('scroll', () => {
+        btn.style.display = window.scrollY > 200 ? 'block' : 'none';
+      });
+      btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
     // HTMLエスケープ
     function escapeHtml(text) {
       const div = document.createElement('div');
@@ -572,6 +653,7 @@
         console.error('初期化失敗:', error);
         showToast(`システム初期化に失敗しました: ${error.message}`, 'error');
       });
+      setupBackToTop();
     });
 </script>
 </body>
