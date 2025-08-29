@@ -3,15 +3,58 @@
 <head>
   <meta charset="utf-8">
   <title>カンパーニュ管理画面（簡素版）</title>
-  <style>
-    /* 管理画面用の簡素なスタイル */
-    body { font-family: system-ui; margin: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-    button { padding: 8px 16px; margin: 4px; cursor: pointer; }
-  </style>
-</head>
+    <style>
+      /* 管理画面のスタイル改善 */
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f4f1ed;
+        margin: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      input {
+        padding: 8px;
+        margin-right: 4px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+      }
+      th, td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      th { background: #fafafa; }
+      tbody tr:hover { background: #f1f1f1; }
+      button {
+        padding: 8px 16px;
+        margin: 4px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        background: #4a90e2;
+        color: #fff;
+      }
+      button:hover { opacity: 0.9; }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #333;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 4px;
+        display: none;
+        z-index: 1000;
+      }
+      .toast.success { background: #38a169; }
+      .toast.error { background: #e53e3e; }
+    </style>
+  </head>
 <body>
   <div class="container">
     <h1>📊 管理ダッシュボード</h1>
@@ -43,10 +86,11 @@
       <button onclick="loadReservations()">🔄 更新</button>
       <button onclick="logout()">ログアウト</button>
     </div>
-  </div>
+    </div>
+    <div id="toast" class="toast"></div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
@@ -78,20 +122,22 @@
     });
 
     // ログイン
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-      } catch (error) {
-        alert('ログイン失敗: ' + error.message);
+      async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        try {
+          await auth.signInWithEmailAndPassword(email, password);
+          showToast('ログインしました', 'success');
+        } catch (error) {
+          showToast('ログイン失敗: ' + error.message, 'error');
+        }
       }
-    }
 
-    // ログアウト
-    function logout() {
-      auth.signOut();
-    }
+      // ログアウト
+      function logout() {
+        auth.signOut();
+        showToast('ログアウトしました', 'success');
+      }
 
     // 予約一覧読み込み
     async function loadReservations() {
@@ -121,15 +167,26 @@
     }
 
     // ステータス更新
-    async function updateStatus(docId, status) {
-      try {
-        await db.collection('reservations').doc(docId).update({ status });
-        loadReservations();
-        alert('更新しました');
-      } catch (error) {
-        alert('更新エラー: ' + error.message);
+      async function updateStatus(docId, status) {
+        if (!confirm('状態を更新しますか？')) return;
+        try {
+          await db.collection('reservations').doc(docId).update({ status });
+          loadReservations();
+          showToast('更新しました', 'success');
+        } catch (error) {
+          showToast('更新エラー: ' + error.message, 'error');
+        }
       }
-    }
-  </script>
-</body>
+
+      function showToast(message, type = 'success', duration = 3000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, duration);
+      }
+    </script>
+  </body>
 </html>
